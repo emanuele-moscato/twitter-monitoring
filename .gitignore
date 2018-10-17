@@ -1,0 +1,5 @@
+.secret
+data
+modules/twitter-scraping/twitter_scraping.egg-info
+modules/twitter-scraping/twitter_scraping/__pycache__
+notebooks/.ipynb_checkpoints
