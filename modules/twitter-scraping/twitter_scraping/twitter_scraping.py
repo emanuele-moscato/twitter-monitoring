@@ -65,11 +65,12 @@ def fetch_tweets(session, twitter_ids_dict, tweets_df):
     
     
 class TwitterScraper(object):
-    def __init__(self, data_path='../data/tweets_df.pkl',
+    def __init__(self, logger, data_path='../data/tweets_df.pkl',
         credentials_path = '../.secret/credentials.ini'):
         self.data_path = data_path
         self.credentials_path = credentials_path
         self.tweets_df = pd.DataFrame()
+        self.logger = logger
     
     def load_tweets(self):
         if self.tweets_df.empty:
@@ -110,11 +111,11 @@ class TwitterScraper(object):
     
     def fetch_tweets(self, session, twitter_ids_dict):
         try:
-            print("Loading tweets...")
+            self.logger.info("Loading tweets...")
             self.load_tweets()
             
             # Do stuff
-            print("Fetching tweets...")
+            self.logger.info("Fetching tweets...")
             for twitter_handle in list(twitter_ids_dict.keys()):
                 try:
                     since_id = int(self.tweets_df[
@@ -136,12 +137,12 @@ class TwitterScraper(object):
                         self.tweets_df = self.tweets_df.append(
                             tweet.as_dict, ignore_index=True)
                 except Exception as e:
-                    print("Error:", e)
+                    print(e)
             
-            print("Saving tweets...")
+            self.logger.info("Saving tweets...")
             self.save_tweets()
-        except Exception as e:
-            print(e)
+        except Exception:
+            self.logger.info("Error fetching tweets", exc_info=True)
 
 
 class TweetsFilter(object):
