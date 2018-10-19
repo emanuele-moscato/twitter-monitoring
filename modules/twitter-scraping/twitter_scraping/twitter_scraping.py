@@ -1,3 +1,9 @@
+import pickle
+from configparser import ConfigParser
+from babylon.data.twitter import api
+import pandas as pd
+
+
 def print_rate_limits(session):
     rate_limit_status = session._session.rate_limit_status()
     
@@ -33,7 +39,7 @@ def get_users_ids(session, twitter_handles_list, twitter_ids_dict, n_users=None)
             
 
 def fetch_tweets(session, twitter_ids_dict, tweets_df):
-    for twitter_handle in list(twitter_ids_dict.keys())[:15]:
+    for twitter_handle in list(twitter_ids_dict.keys()):
         try:
             since_id = int(tweets_df[
                 tweets_df['twitter_handle']==twitter_handle
@@ -56,3 +62,88 @@ def fetch_tweets(session, twitter_ids_dict, tweets_df):
             print("Error:", e)
             
     return tweets_df
+    
+    
+class TwitterScraper(object):
+    def __init__(self, data_path='../data/tweets_df.pkl',
+        credentials_path = '../.secret/credentials.ini'):
+        self.data_path = data_path
+        self.credentials_path = credentials_path
+        self.tweets_df = pd.DataFrame()
+    
+    def load_tweets(self):
+        if self.tweets_df.empty:
+            with open(self.data_path, 'rb') as f:
+                self.tweets_df = pickle.load(f)
+        else:
+            pass
+    
+    
+    def save_tweets(self):
+        if not self.tweets_df.empty:
+            with open(self.data_path, 'wb') as f:
+                pickle.dump(self.tweets_df, f)
+        else:
+            print("Can't save tweets: no tweets loaded")
+            
+            
+    def get_session(self):
+        cp = ConfigParser()
+        cp.read(self.credentials_path)
+        
+        try:
+            session = api.Session(
+                consumer_key = cp['emas_twitter_credentials']['consumer_key'],
+                consumer_secret = cp['emas_twitter_credentials']['consumer_secret'],
+                access_token = cp['emas_twitter_credentials']['access_token'],
+                access_token_secret = cp['emas_twitter_credentials']['access_token_secret']
+            )
+        except:
+            session = api.Session(
+                consumer_key = cp['twitter_credentials']['consumer_key'],
+                consumer_secret = cp['twitter_credentials']['consumer_secret'],
+                access_token = cp['twitter_credentials']['access_token'],
+                access_token_secret = cp['twitter_credentials']['access_token_secret']
+            )
+        return session
+    
+    
+    def fetch_tweets(self, session, twitter_ids_dict):
+        try:
+            print("Loading tweets...")
+            self.load_tweets()
+            
+            # Do stuff
+            print("Fetching tweets...")
+            for twitter_handle in list(twitter_ids_dict.keys()):
+                try:
+                    since_id = int(self.tweets_df[
+                        self.tweets_df['twitter_handle']==twitter_handle
+                    ]['twitter_id'].max())
+                except Exception as e:
+                    since_id = None
+                
+                print(f"Fetching tweets: {twitter_handle}")
+                print(f"since_id={since_id}")
+        
+                try:
+                    tweets = session.tweets(
+                        twitter_ids_dict[twitter_handle], since_id=since_id
+                    )
+                
+                    for tweet in tweets:
+                        tweet.as_dict['twitter_handle'] = twitter_handle
+                        self.tweets_df = self.tweets_df.append(
+                            tweet.as_dict, ignore_index=True)
+                except Exception as e:
+                    print("Error:", e)
+            
+            print("Saving tweets...")
+            self.save_tweets()
+        except Exception as e:
+            print(e)
+
+
+class TweetsFilter(object):
+    def __init__(self, tweets_df):
+        self.tweets_df = tweets_df
