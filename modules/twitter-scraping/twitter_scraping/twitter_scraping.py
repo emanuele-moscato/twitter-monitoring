@@ -73,11 +73,8 @@ class TwitterScraper(object):
         self.logger = logger
     
     def load_tweets(self):
-        if self.tweets_df.empty:
-            with open(self.data_path, 'rb') as f:
-                self.tweets_df = pickle.load(f)
-        else:
-            pass
+        with open(self.data_path, 'rb') as f:
+            self.tweets_df = pickle.load(f)
     
     
     def save_tweets(self):
@@ -113,7 +110,7 @@ class TwitterScraper(object):
         try:
             self.logger.info("Loading tweets...")
             self.load_tweets()
-            
+
             # Do stuff
             self.logger.info("Fetching tweets...")
             for twitter_handle in list(twitter_ids_dict.keys()):
@@ -126,19 +123,19 @@ class TwitterScraper(object):
                 
                 print(f"Fetching tweets: {twitter_handle}")
                 print(f"since_id={since_id}")
-        
+
                 try:
                     tweets = session.tweets(
                         twitter_ids_dict[twitter_handle], since_id=since_id
                     )
-                
+
                     for tweet in tweets:
                         tweet.as_dict['twitter_handle'] = twitter_handle
                         self.tweets_df = self.tweets_df.append(
                             tweet.as_dict, ignore_index=True)
                 except Exception as e:
                     print(e)
-            
+
             self.logger.info("Saving tweets...")
             self.save_tweets()
         except Exception:
@@ -148,3 +145,33 @@ class TwitterScraper(object):
 class TweetsFilter(object):
     def __init__(self, tweets_df):
         self.tweets_df = tweets_df
+        
+    
+    def filter_by_company(self, tweets_df, companies_list):
+        return tweets_df[
+            tweets_df['twitter_handle'].isin(companies_list)]
+    
+    
+    def filter_by_date(self, tweets, dates_range):
+        pass
+    
+    
+    def filter_by_keyword(self, tweets, keywords_list):
+        pass
+    
+    
+    def filter_tweets(self, companies_list=[], dates_range=[],
+        keywords_list=[]):
+        filtered_tweets_df = self.tweets_df.copy
+
+        if companies_list:
+            filtered_tweets_df = self.filter_by_company(filtered_tweets_df,
+                companies_list)
+            
+        if dates_range:
+            pass
+        
+        if keywords_list:
+            pass
+        
+        return filtered_tweets_df
