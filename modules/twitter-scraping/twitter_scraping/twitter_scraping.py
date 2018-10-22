@@ -111,7 +111,6 @@ class TwitterScraper(object):
             self.logger.info("Loading tweets...")
             self.load_tweets()
 
-            # Do stuff
             self.logger.info("Fetching tweets...")
             for twitter_handle in list(twitter_ids_dict.keys()):
                 try:
@@ -135,6 +134,8 @@ class TwitterScraper(object):
                             tweet.as_dict, ignore_index=True)
                 except Exception as e:
                     print(e)
+            self.tweets_df['created_at'] = pd.to_datetime(
+                self.tweets_df['created_at'])
 
             self.logger.info("Saving tweets...")
             self.save_tweets()
@@ -148,30 +149,55 @@ class TweetsFilter(object):
         
     
     def filter_by_company(self, tweets_df, companies_list):
+        for company in companies_list:
+            if company not in self.tweets_df['twitter_handle'].unique():
+                print((f"Warning: '{company}' is not among the followed "
+                    "Twitter handles (and this IS case sensitive)"))
+        
         return tweets_df[
             tweets_df['twitter_handle'].isin(companies_list)]
     
     
-    def filter_by_date(self, tweets, dates_range):
-        pass
+    def filter_by_date(self, tweets_df, dates_range):
+        return tweets_df[
+            (tweets_df['created_at']>dates_range[0]) &
+            (tweets_df['created_at']<dates_range[1])
+        ]
     
     
-    def filter_by_keyword(self, tweets, keywords_list):
-        pass
+    def filter_by_keyword(self, tweets_df, keywords_list):
+        """
+        Filters tweets dataframe by keyword: only tweets containing one or more
+        keywords in their text field are returned (it's an OR).
+        """
+        filtered_tweets_df = pd.DataFrame(columns=tweets_df.columns)
+
+        for keyword in keywords_list:
+            filtered_tweets_df = filtered_tweets_df.append(
+                tweets_df[tweets_df['text'].str.contains(keyword)]
+            )
+        
+        return filtered_tweets_df
     
     
     def filter_tweets(self, companies_list=[], dates_range=[],
-        keywords_list=[]):
-        filtered_tweets_df = self.tweets_df.copy
+        keywords_list=[], reindex=False):
+        filtered_tweets_df = self.tweets_df.copy()
 
         if companies_list:
             filtered_tweets_df = self.filter_by_company(filtered_tweets_df,
                 companies_list)
             
         if dates_range:
-            pass
+            filtered_tweets_df = self.filter_by_date(filtered_tweets_df,
+                dates_range)
         
         if keywords_list:
-            pass
+            filtered_tweets_df = self.filter_by_keyword(filtered_tweets_df,
+                keywords_list)
+        
+        if reindex:
+            filtered_tweets_df = filtered_tweets_df.reset_index().drop(
+                'index', axis=1)
         
         return filtered_tweets_df
