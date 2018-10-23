@@ -196,6 +196,9 @@ class TweetsFilter(object):
             filtered_tweets_df = self.filter_by_keyword(filtered_tweets_df,
                 keywords_list)
         
+        filtered_tweets_df = filtered_tweets_df.sort_values(by='created_at',
+            ascending=False)
+        
         if reindex:
             filtered_tweets_df = filtered_tweets_df.reset_index().drop(
                 'index', axis=1)

@@ -1,11 +1,11 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
-   name='twitter-scraping',
+   name='growth-targeting',
    version='0.0.1',
    description='',
    author='Emanuele Moscato',
    author_email='emanuele.m@asidatascience.com',
-   packages=['twitter_scraping'],  #same as name
+   packages=find_packages(),
    install_requires=[], #external packages as dependencies
 )
