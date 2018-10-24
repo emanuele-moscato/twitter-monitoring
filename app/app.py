@@ -134,7 +134,7 @@ def filter_by_companies(companies_list, start_date, end_date):
     else:
         dates_range = []
     
-    if companies_list:
+    if companies_list or dates_range:
         return generate_table(
             tweets_filter.filter_tweets(companies_list=companies_list,
                 dates_range=dates_range))
