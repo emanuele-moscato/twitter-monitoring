@@ -9,7 +9,6 @@ git clone git@bitbucket.org:theasi/alexandria-babylon.git
 ```
 
 ## To do
-* Organize the app in tabs
 * Create a tab to:
     * See the list of companies
     * Download new tweets form those companies

@@ -53,74 +53,95 @@ twitter_scraper.load_tweets()
 tweets_filter = TweetsFilter(twitter_scraper.tweets_df)
 
 app.layout = html.Div(children=[
-        html.H1("The Growth targeting tool"),
-        html.Button('Test!', id='test-button', style={'marginBottom': '10px'}),
-        html.Div(id='test-div'),
-        html.Div(id='companies-list-div'),
-        html.Div(
-            id='options-container',
-            children=[
-                html.Div(
-                    id='dates-range-container',
-                    children=[
-                        dcc.DatePickerRange(
-                            id='date-picker-range',
-                            end_date=pd.to_datetime(pd.Timestamp.now()),
-                            start_date_placeholder_text='Select a date!'
-                        )
-                    ],
-                    style={
-                        'text-align': 'center',
-                        'marginBottom': '5px'
-                    }
-                ),
-                html.Div(
-                    id='companies-container',
-                    children=[
-                        dcc.Dropdown(
-                            id='companies-dropdown',
-                            options=handles_present(tweets_filter),
-                            placeholder="Companies...",
-                            multi=True
-                        )
-                    ],
-                    style={
-                        'display': 'inline-block',
-                        'width': '20%'
-                    }
-                ),
-                html.Div(
-                    id='keywords-container',
-                    children=[
-                        dcc.Dropdown(
-                            id='keywords-dropdown',
-                            options=[
-                                {'label': 'New York City', 'value': 'NYC'},
-                                {'label': 'Montreal', 'value': 'MTL'},
-                                {'label': 'San Francisco', 'value': 'SF'}
-                            ],
-                            placeholder="Keywords...",
-                            multi=True
-                        )
-                    ],
-                    style={
-                        'display': 'inline-block',
-                        'width': '20%'
-                    }
-                )
-            ]
-        ),
-        html.Div(
-            id='tweets-container',
-            style={
-                'width': '80%',
-                'display': 'inline-block',
-                'text-align': 'center'
-            }
-        )
-    ],
-    style={'text-align':"center"}
-)
+    html.H1("The Growth targeting tool", style={'text-align': 'center'}),
+    dcc.Tabs(id='tabs', children=[
+        dcc.Tab(label='Select tweets', children=[
+            html.Div(
+                children=[
+                    html.Button('Test!', id='test-button',
+                        style={'marginBottom': '10px'}),
+                    html.Div(id='test-div'),
+                    html.Div(id='companies-list-div'),
+                    html.Div(
+                        id='options-container',
+                        children=[
+                            html.Div(
+                                id='dates-range-container',
+                                children=[
+                                    dcc.DatePickerRange(
+                                        id='date-picker-range',
+                                        end_date=pd.to_datetime(
+                                            pd.Timestamp.now()),
+                                        start_date_placeholder_text=("Select a "
+                                            "date!")
+                                    )
+                                ],
+                                style={
+                                    'text-align': 'center',
+                                    'marginBottom': '5px'
+                                }
+                            ),
+                            html.Div(
+                                id='companies-container',
+                                children=[
+                                    dcc.Dropdown(
+                                        id='companies-dropdown',
+                                        options=handles_present(tweets_filter),
+                                        placeholder="Companies...",
+                                        multi=True
+                                    )
+                                ],
+                                style={
+                                    'display': 'inline-block',
+                                    'width': '20%'
+                                }
+                            ),
+                            html.Div(
+                                id='keywords-container',
+                                children=[
+                                    dcc.Dropdown(
+                                        id='keywords-dropdown',
+                                        options=[
+                                            {'label': 'New York City',
+                                                'value': 'NYC'},
+                                            {'label': 'Montreal',
+                                                'value': 'MTL'},
+                                            {'label': 'San Francisco',
+                                                'value': 'SF'}
+                                        ],
+                                        placeholder="Keywords...",
+                                        multi=True
+                                    )
+                                ],
+                                style={
+                                    'display': 'inline-block',
+                                    'width': '20%'
+                                }
+                            )
+                        ]
+                    ),
+                    html.Div(
+                        id='tweets-container',
+                        style={
+                            'width': '80%',
+                            'display': 'inline-block',
+                            'text-align': 'center'
+                        }
+                    )
+                ],
+                style={'text-align':"center", 'marginTop': '10px'}
+            )
+        ]),
+        dcc.Tab(label='Manage tweets', children=[
+            html.Div(
+                children=[
+                    html.P("Manage tweets here"),
+                ],
+                style={'text-align':"center"}
+            )
+        ])
+    ])
+])
 
 
 @app.callback(
