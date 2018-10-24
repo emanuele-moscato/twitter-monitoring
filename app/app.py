@@ -129,6 +129,10 @@ app.layout = html.Div(children=[
     Input('date-picker-range', 'start_date'),
     Input('date-picker-range', 'end_date')])
 def filter_by_companies(companies_list, start_date, end_date):
+    twitter_scraper.load_tweets()
+
+    tweets_filter.tweets_df = twitter_scraper.tweets_df
+    
     if start_date and end_date:
         dates_range = [start_date, end_date]
     else:

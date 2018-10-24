@@ -9,7 +9,6 @@ git clone git@bitbucket.org:theasi/alexandria-babylon.git
 ```
 
 ## To do
-* Re-instantiate the scaper and filter objects with each callback: global ones are not sensitive to download on new tweets.
 * Organize the app in tabs
 * Create a tab to:
     * See the list of companies
