@@ -2,6 +2,7 @@ import pickle
 from configparser import ConfigParser
 from babylon.data.twitter import api
 import pandas as pd
+import json
 
 
 def print_rate_limits(session):
@@ -66,8 +67,10 @@ def fetch_tweets(session, twitter_ids_dict, tweets_df):
     
 class TwitterScraper(object):
     def __init__(self, logger, data_path='../data/tweets_df.pkl',
-        credentials_path = '../.secret/credentials.ini'):
+        credentials_path = '../.secret/credentials.ini',
+        twitter_ids_dict_path='../data/companies_twitter_ids.json'):
         self.data_path = data_path
+        self.twitter_ids_dict_path = twitter_ids_dict_path
         self.credentials_path = credentials_path
         self.tweets_df = pd.DataFrame()
         self.logger = logger
@@ -83,6 +86,11 @@ class TwitterScraper(object):
                 pickle.dump(self.tweets_df, f)
         else:
             print("Can't save tweets: no tweets loaded")
+    
+    
+    def get_twitter_ids(self):
+        with open(self.twitter_ids_dict_path, 'r') as f:
+            self.twitter_ids_dict = json.load(f)
             
             
     def get_session(self):

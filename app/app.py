@@ -4,15 +4,19 @@ import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output, State, Event
 import pandas as pd
-from app_components.app_components import handles_present, generate_table
+from app_components.app_components import handles_present, generate_table, \
+    tweets_are_updating, toggle_tweets_updating
 from twitter_scraping.twitter_scraping import TwitterScraper, TweetsFilter
 import daiquiri
 import logging
 import os.path as path
 import sys
+import json
+from time import sleep
 
 
 LOGS_DIR = '../logs/'
+IDS_PATH = '../data/companies_twitter_ids.json'
 
 daiquiri.setup(
     level=logging.INFO,
@@ -135,12 +139,21 @@ app.layout = html.Div(children=[
         dcc.Tab(label='Manage tweets', children=[
             html.Div(
                 children=[
-                    html.P("Manage tweets here"),
+                    html.Button("Update tweets", id='update-tweets-button',
+                        style={'marginTop': '10px'}),
+                        dcc.Interval(
+                            id='tweets-updating-interval',
+                            interval=1000,
+                            n_intervals=0
+                        ),
+                        html.Div(id='tweets-updating-container',
+                            style={'marginTop': '10px'})
                 ],
                 style={'text-align':"center"}
             )
         ])
-    ])
+    ]),
+    html.Div(id='hidden-div', style={'display': 'none'})
 ])
 
 
@@ -165,6 +178,49 @@ def filter_by_companies(companies_list, start_date, end_date):
                 dates_range=dates_range))
     else:
         return None
+
+
+@app.callback(
+    Output('hidden-div', 'children'),
+    events=[Event('update-tweets-button', 'click')])
+def update_tweets():
+    toggle_tweets_updating()
+    
+    # Update tweets
+    twitter_scraper.get_twitter_ids()
+    twitter_scraper.fetch_tweets(twitter_scraper.get_session(),
+        twitter_scraper.twitter_ids_dict)
+    
+    toggle_tweets_updating()
+    
+    return None
+
+
+@app.callback(
+    Output('tweets-updating-container', 'children'),
+    [Input('tweets-updating-interval', 'n_intervals')],
+    [State('update-tweets-button', 'n_clicks')])
+def tweets_updating_signal(n_intervals, n_clicks):
+    if tweets_are_updating():
+        return html.P("Tweets updating...")
+    elif not tweets_are_updating():
+        if not n_clicks:
+            return None
+        else:
+            return html.P("Tweets updated")
+    else:
+        return html.P("Error: inconsistent tweets updating toggle!")
+
+
+@app.callback(
+    Output('update-tweets-button', 'style'),
+    [Input('tweets-updating-interval', 'n_intervals')])
+def toggle_update_button(n_intervals):
+    if tweets_are_updating():
+        return {'display': 'none'}
+    else:
+        return {'display': 'inline-block', 'marginTop': '10px'}
+    
         
         
 @app.callback(
