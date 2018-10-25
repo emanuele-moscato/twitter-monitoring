@@ -1,12 +1,17 @@
 import pickle
 from configparser import ConfigParser
-from babylon.data.twitter import api
+import tweepy
 import pandas as pd
 import json
 
 
-def print_rate_limits(session):
-    rate_limit_status = session._session.rate_limit_status()
+def print_rate_limits(api):
+    """
+    Parameters
+    ----------
+        api: tweepy.API
+    """
+    rate_limit_status = api.rate_limit_status()
     
     for key in rate_limit_status['resources'].keys():
         for endpoint in rate_limit_status['resources'][key].keys():
@@ -18,7 +23,20 @@ def print_rate_limits(session):
                 print(rate_limit_status['resources'][key][endpoint])
                 
 
-def get_users_ids(session, twitter_handles_list, twitter_ids_dict, n_users=None):
+def get_users_ids(api, twitter_handles_list, twitter_ids_dict, n_users=None):
+    """
+    Parameters
+    ----------
+        api: tweepy.API
+        twitter_handles_list: list
+            List of Twitter handles (screen names)
+        twitter_ids_dict: dict
+            Dictionary to which to append the new {'handle': 'id'}
+            key-value pairs
+        n_users: int
+            Maximum number of users of which to fetch the ids. Default: None
+            (i.e. range(twitter_handles_list)).
+    """
     if not n_users:
         n_users = len(twitter_handles_list)
         
@@ -30,7 +48,7 @@ def get_users_ids(session, twitter_handles_list, twitter_ids_dict, n_users=None)
         print(f"Fetching id: @{twitter_handle}")
         
         try:
-            twitter_id = session.user_id(twitter_handle)
+            twitter_id = api.get_user(twitter_handle).id
             
             twitter_ids_dict.update(
                 {twitter_handle: twitter_id}
@@ -39,7 +57,18 @@ def get_users_ids(session, twitter_handles_list, twitter_ids_dict, n_users=None)
             print(e)
             
 
-def fetch_tweets(session, twitter_ids_dict, tweets_df):
+def fetch_tweets(api, twitter_ids_dict, tweets_df):
+    """
+    Parameters
+    __________
+        api: tweepy.API
+        twitter_ids_dict: dict
+        tweets_df: pandas.DataFrame
+    
+    Returns
+    -------
+        tweets_df: pandas.DataFrame
+    """
     for twitter_handle in list(twitter_ids_dict.keys()):
         try:
             since_id = int(tweets_df[
@@ -52,13 +81,24 @@ def fetch_tweets(session, twitter_ids_dict, tweets_df):
         print(f"since_id={since_id}")
 
         try:
-            tweets = session.tweets(
-                twitter_ids_dict[twitter_handle], since_id=since_id
+            tweets = api.user_timeline(
+                id=twitter_ids_dict[twitter_handle],
+                count=200,
+                since_id=since_id
             )
         
             for tweet in tweets:
-                tweet.as_dict['twitter_handle'] = twitter_handle
-                tweets_df = tweets_df.append(tweet.as_dict, ignore_index=True)
+                tweet_dict = {
+                    'twitter_id': tweet.id_str,
+                    'created_at': tweet.created_at,
+                    'text': tweet.text,
+                    'user_id': tweet.user.id_str,
+                    'twitter_handle': twitter_handle,
+                    'is_retweeted': tweet.retweeted,
+                    'retweet_count': tweet.retweet_count,
+                    'favorite_count': tweet.favorite_count
+                }
+                tweets_df = tweets_df.append(tweet_dict, ignore_index=True)
         except Exception as e:
             print("Error:", e)
             
