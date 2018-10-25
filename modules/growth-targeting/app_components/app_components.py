@@ -2,8 +2,6 @@ import dash_html_components as html
 import json
 
 
-TWEETS_UPDATING_FLAG_PATH = '../data/tweets_updating_flag.json'
-
 tweets_cols = [
     'twitter_handle',
     'created_at',
@@ -32,23 +30,23 @@ def generate_table(dataframe):
     )
 
 
-def tweets_are_updating():
-    with open(TWEETS_UPDATING_FLAG_PATH, 'r') as f:
+def tweets_are_updating(tweets_updating_flag_path):
+    with open(tweets_updating_flag_path, 'r') as f:
         tweets_updating_flag = json.load(f)
     
     return tweets_updating_flag['is_updating']
 
 
-def toggle_tweets_updating():
+def toggle_tweets_updating(tweets_updating_flag_path):
     """
     Inverts inverts the value of the tweets updating flag (a json file in the 
     workspace).
     """
-    if tweets_are_updating():
-        with open(TWEETS_UPDATING_FLAG_PATH, 'w') as f:
+    if tweets_are_updating(tweets_updating_flag_path):
+        with open(tweets_updating_flag_path, 'w') as f:
             json.dump({"is_updating": False}, f)
-    elif not tweets_are_updating():
-        with open(TWEETS_UPDATING_FLAG_PATH, 'w') as f:
+    elif not tweets_are_updating(tweets_updating_flag_path):
+        with open(tweets_updating_flag_path, 'w') as f:
             json.dump({"is_updating": True}, f)
     else:
         print("Error: updating tweets toggle is inconsistent.")

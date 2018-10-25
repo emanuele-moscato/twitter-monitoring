@@ -15,8 +15,9 @@ import json
 from time import sleep
 
 
-LOGS_DIR = '../logs/'
-IDS_PATH = '../data/companies_twitter_ids.json'
+LOGS_DIR = '../logs/logs_tweepy/'
+IDS_PATH = '../data/data_tweepy/twitter_ids_dict.json'
+TWEETS_UPDATING_FLAG_PATH = '../data/data_tweepy/tweets_updating_flag.json'
 
 daiquiri.setup(
     level=logging.INFO,
@@ -51,7 +52,12 @@ app.scripts.config.serve_locally = True
 
 app.config['suppress_callback_exceptions']=True
 
-twitter_scraper = TwitterScraper(logger)
+twitter_scraper = TwitterScraper(
+    logger,
+    data_path='../data/data_tweepy/tweets_df.pkl',
+    credentials_path='../.secret/credentials.ini',
+    twitter_ids_dict_path='../data/data_tweepy/twitter_ids_dict.json'
+)
 twitter_scraper.load_tweets()
 
 tweets_filter = TweetsFilter(twitter_scraper.tweets_df)
@@ -184,14 +190,14 @@ def filter_by_companies(companies_list, start_date, end_date):
     Output('hidden-div', 'children'),
     events=[Event('update-tweets-button', 'click')])
 def update_tweets():
-    toggle_tweets_updating()
+    toggle_tweets_updating(TWEETS_UPDATING_FLAG_PATH)
     
     # Update tweets
     twitter_scraper.get_twitter_ids()
-    twitter_scraper.fetch_tweets(twitter_scraper.get_session(),
+    twitter_scraper.fetch_tweets(twitter_scraper.get_tweepy_api(),
         twitter_scraper.twitter_ids_dict)
     
-    toggle_tweets_updating()
+    toggle_tweets_updating(TWEETS_UPDATING_FLAG_PATH)
     
     return None
 
@@ -201,9 +207,9 @@ def update_tweets():
     [Input('tweets-updating-interval', 'n_intervals')],
     [State('update-tweets-button', 'n_clicks')])
 def tweets_updating_signal(n_intervals, n_clicks):
-    if tweets_are_updating():
+    if tweets_are_updating(TWEETS_UPDATING_FLAG_PATH):
         return html.P("Tweets updating...")
-    elif not tweets_are_updating():
+    elif not tweets_are_updating(TWEETS_UPDATING_FLAG_PATH):
         if not n_clicks:
             return None
         else:
@@ -216,7 +222,7 @@ def tweets_updating_signal(n_intervals, n_clicks):
     Output('update-tweets-button', 'style'),
     [Input('tweets-updating-interval', 'n_intervals')])
 def toggle_update_button(n_intervals):
-    if tweets_are_updating():
+    if tweets_are_updating(TWEETS_UPDATING_FLAG_PATH):
         return {'display': 'none'}
     else:
         return {'display': 'inline-block', 'marginTop': '10px'}

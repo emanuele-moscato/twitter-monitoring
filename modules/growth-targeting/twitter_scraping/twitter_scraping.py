@@ -99,7 +99,7 @@ def fetch_tweets(api, twitter_ids_dict, tweets_df):
                     'text': tweet.text,
                     'user_id': tweet.user.id_str,
                     'twitter_handle': twitter_handle,
-                    'is_retweeted': tweet.retweeted,
+                    'is_retweet': str(tweet.retweeted),
                     'retweet_count': tweet.retweet_count,
                     'favorite_count': tweet.favorite_count
                 }
@@ -197,7 +197,7 @@ class TwitterScraper(object):
                             'text': tweet.text,
                             'user_id': tweet.user.id_str,
                             'twitter_handle': twitter_handle,
-                            'is_retweeted': tweet.retweeted,
+                            'is_retweet': str(tweet.retweeted),
                             'retweet_count': tweet.retweet_count,
                             'favorite_count': tweet.favorite_count
                         }
