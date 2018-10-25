@@ -59,6 +59,11 @@ def get_users_ids(api, twitter_handles_list, twitter_ids_dict, n_users=None):
 
 def fetch_tweets(api, twitter_ids_dict, tweets_df):
     """
+    Download 200 tweets for all the users in twitter_ids_dict, starting
+    chronologically from the last tweet for each user over. If no tweet from a
+    particular user is present in the dataframe, then the the last 200 tweets are
+    fetched.
+    
     Parameters
     __________
         api: tweepy.API
@@ -89,7 +94,7 @@ def fetch_tweets(api, twitter_ids_dict, tweets_df):
         
             for tweet in tweets:
                 tweet_dict = {
-                    'twitter_id': tweet.id_str,
+                    'twitter_id': tweet.id,
                     'created_at': tweet.created_at,
                     'text': tweet.text,
                     'user_id': tweet.user.id_str,
@@ -133,28 +138,35 @@ class TwitterScraper(object):
             self.twitter_ids_dict = json.load(f)
             
             
-    def get_session(self):
+    def get_tweepy_api(self):
+        """
+        Reads the Twitter credentials from file and returns a tweepy.API instance.
+        """
         cp = ConfigParser()
         cp.read(self.credentials_path)
         
         try:
-            session = api.Session(
-                consumer_key = cp['emas_twitter_credentials']['consumer_key'],
-                consumer_secret = cp['emas_twitter_credentials']['consumer_secret'],
-                access_token = cp['emas_twitter_credentials']['access_token'],
-                access_token_secret = cp['emas_twitter_credentials']['access_token_secret']
+            auth = tweepy.OAuthHandler(
+                cp['emas_twitter_credentials']['consumer_key'],
+                cp['emas_twitter_credentials']['consumer_secret'])
+            auth.set_access_token(
+                cp['emas_twitter_credentials']['access_token'],
+                cp['emas_twitter_credentials']['access_token_secret']
             )
+            api = tweepy.API(auth_handler=auth)
         except:
-            session = api.Session(
-                consumer_key = cp['twitter_credentials']['consumer_key'],
-                consumer_secret = cp['twitter_credentials']['consumer_secret'],
-                access_token = cp['twitter_credentials']['access_token'],
-                access_token_secret = cp['twitter_credentials']['access_token_secret']
+            auth = tweepy.OAuthHandler(
+                cp['twitter_credentials']['consumer_key'],
+                cp['twitter_credentials']['consumer_secret'])
+            auth.set_access_token(
+                cp['twitter_credentials']['access_token'],
+                cp['twitter_credentials']['access_token_secret']
             )
-        return session
+            api = tweepy.API(auth_handler=auth)
+        return api
     
     
-    def fetch_tweets(self, session, twitter_ids_dict):
+    def fetch_tweets(self, api, twitter_ids_dict):
         try:
             self.logger.info("Loading tweets...")
             self.load_tweets()
@@ -172,18 +184,27 @@ class TwitterScraper(object):
                 print(f"since_id={since_id}")
 
                 try:
-                    tweets = session.tweets(
-                        twitter_ids_dict[twitter_handle], since_id=since_id
+                    tweets = api.user_timeline(
+                        id=twitter_ids_dict[twitter_handle],
+                        count=200,
+                        since_id=since_id
                     )
-
+                
                     for tweet in tweets:
-                        tweet.as_dict['twitter_handle'] = twitter_handle
-                        self.tweets_df = self.tweets_df.append(
-                            tweet.as_dict, ignore_index=True)
+                        tweet_dict = {
+                            'twitter_id': tweet.id,
+                            'created_at': tweet.created_at,
+                            'text': tweet.text,
+                            'user_id': tweet.user.id_str,
+                            'twitter_handle': twitter_handle,
+                            'is_retweeted': tweet.retweeted,
+                            'retweet_count': tweet.retweet_count,
+                            'favorite_count': tweet.favorite_count
+                        }
+                        self.tweets_df = self.tweets_df.append(tweet_dict,
+                            ignore_index=True)
                 except Exception as e:
-                    print(e)
-            self.tweets_df['created_at'] = pd.to_datetime(
-                self.tweets_df['created_at'])
+                    print("Error:", e)
 
             self.logger.info("Saving tweets...")
             self.save_tweets()
