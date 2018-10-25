@@ -1,15 +1,27 @@
-# Growth targeting tools
+# Twitter monitoring tools
 
-A Plotly Dash app to help the Growth team find new leads.
+A package plus a Plotly Dash app to help monitor latest tweets from selected users on Twitter.
 
-__Note:__ in order for the web app to work, clone Babylon in the `modules/` directory:
+## Requirements
+First install the custom included package,
 ```
-cd /project/growth-targeting-tools/modules
-git clone git@bitbucket.org:theasi/alexandria-babylon.git
+cd /modules/growth-targeting
+pip install .
+```
+
+Additional packages that should be installed (from pyPI) by the above are
+* Tweepy
+* Daiquiri
+* Dash
+* dash_html_components
+* dash_core_components
+
+To manually install these,
+```
+pip install -r requirements.txt
 ```
 
 ## To do
 * Create a tab to:
-    * See the list of companies
-    * Download new tweets form those companies
-    * Add companies to the list
+    * See the list of users whose tweets we want to monitor
+    * Add users to the list
