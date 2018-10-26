@@ -242,18 +242,7 @@ def show_handles_summary(value):
     twitter_scraper.load_tweets()
     tweets_filter.tweets_df = twitter_scraper.tweets_df
     
-    return generate_handles_summary(tweets_filter)
-
-
-"""@app.callback(
-    Output('handles-summary-container', 'children'),
-    [Input('tabs', 'value')])
-def show_handles_summary(tab_value):
-    if tab_value=="manage-tweets-tab":
-        twitter_scraper.load_tweets()
-        tweets_filter.tweets_df = twitter_scraper.tweets_df
-        
-        return generate_handles_summary(tweets_filter)"""
+    return generate_handles_summary(tweets_filter, value)
 
         
 @app.callback(

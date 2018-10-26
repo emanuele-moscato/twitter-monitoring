@@ -56,10 +56,12 @@ def toggle_tweets_updating():
         print("Error: updating tweets toggle is inconsistent.")
 
 
-def generate_handles_summary(tweets_filter):
+def generate_handles_summary(tweets_filter, handles_list):
+    filtered_df = tweets_filter.filter_tweets(companies_list=handles_list)
+    
     handles_summary_df = pd.concat(
-        [tweets_filter.tweets_df.groupby(by='twitter_handle').size(),
-        tweets_filter.tweets_df.groupby('twitter_handle')['created_at'].max()],
+        [filtered_df.groupby(by='twitter_handle').size(),
+        filtered_df.groupby('twitter_handle')['created_at'].max()],
         axis=1
     ).reset_index().rename({0: 'n_tweets'}, axis=1)
     
