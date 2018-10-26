@@ -1,4 +1,5 @@
 import dash_html_components as html
+import dash_core_components as dcc
 import json
 import pandas as pd
 
@@ -55,11 +56,35 @@ def toggle_tweets_updating():
         print("Error: updating tweets toggle is inconsistent.")
 
 
-def generate_handles_summary(tweets_df):
+def generate_handles_summary(tweets_filter):
     handles_summary_df = pd.concat(
-        [tweets_df.groupby(by='twitter_handle').size(),
-        tweets_df.groupby('twitter_handle')['created_at'].max()],
+        [tweets_filter.tweets_df.groupby(by='twitter_handle').size(),
+        tweets_filter.tweets_df.groupby('twitter_handle')['created_at'].max()],
         axis=1
     ).reset_index().rename({0: 'n_tweets'}, axis=1)
+    
+    table = html.Table(
+        # Header
+        [html.Tr([html.Th(col) for col in handles_summary_df.columns])] +
 
-    return handles_summary_df
+        # Body
+        [
+            html.Tr([
+            html.Td(str(handles_summary_df.iloc[i][col])) for col in 
+            handles_summary_df.columns]) for i in range(len(handles_summary_df))
+        ],
+        style={'display': 'inline-block',}
+    )
+    
+    subselect_dropdown = dcc.Dropdown(
+        id='subselect-handles-dropdown',
+        options=handles_present(tweets_filter),
+        placeholder="Select handles...",
+        multi=True
+    )
+    
+    return [
+        # html.H3("Summary by Twitter handle"),
+        # subselect_dropdown,
+        table
+    ]

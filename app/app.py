@@ -5,7 +5,7 @@ import dash_core_components as dcc
 from dash.dependencies import Input, Output, State, Event
 import pandas as pd
 from app_components.app_components import handles_present, generate_table, \
-    tweets_are_updating, toggle_tweets_updating
+    tweets_are_updating, toggle_tweets_updating, generate_handles_summary
 from twitter_scraping.twitter_scraping import TwitterScraper, TweetsFilter
 import daiquiri
 import logging
@@ -59,7 +59,8 @@ tweets_filter = TweetsFilter(twitter_scraper.tweets_df)
 app.layout = html.Div(children=[
     html.H1("The Growth targeting tool", style={'text-align': 'center'}),
     dcc.Tabs(id='tabs', children=[
-        dcc.Tab(label='Select tweets', children=[
+        dcc.Tab(id='select-tweets-tab', label='Select tweets',
+            value='select-tweets-tab', children=[
             html.Div(
                 children=[
                     html.Button('Test!', id='test-button',
@@ -136,18 +137,30 @@ app.layout = html.Div(children=[
                 style={'text-align':"center", 'marginTop': '10px'}
             )
         ]),
-        dcc.Tab(label='Manage tweets', children=[
+        dcc.Tab(id='manage-tweets-tab', label='Manage tweets',
+            value='manage-tweets-tab', children=[
             html.Div(
                 children=[
                     html.Button("Update tweets", id='update-tweets-button',
                         style={'marginTop': '10px'}),
-                        dcc.Interval(
-                            id='tweets-updating-interval',
-                            interval=1000,
-                            n_intervals=0
-                        ),
-                        html.Div(id='tweets-updating-container',
-                            style={'marginTop': '10px'})
+                    dcc.Interval(
+                        id='tweets-updating-interval',
+                        interval=1000,
+                        n_intervals=0
+                    ),
+                    html.Div(id='tweets-updating-container',
+                        style={'marginTop': '10px'}),
+                    html.H3("Summary by Twitter handle"),
+                    html.Div(children=[
+                        dcc.Dropdown(
+                            id='subselect-handles-dropdown',
+                            options=handles_present(tweets_filter),
+                            placeholder="Select handles",
+                            multi=True,
+                        )],
+                        style={'width': '20%', 'display': 'inline-block'}
+                    ),
+                    html.Div(id='handles-summary-container')
                 ],
                 style={'text-align':"center"}
             )
@@ -220,8 +233,28 @@ def toggle_update_button(n_intervals):
         return {'display': 'none'}
     else:
         return {'display': 'inline-block', 'marginTop': '10px'}
-    
         
+        
+@app.callback(
+    Output('handles-summary-container', 'children'),
+    [Input('subselect-handles-dropdown', 'value')])
+def show_handles_summary(value):
+    twitter_scraper.load_tweets()
+    tweets_filter.tweets_df = twitter_scraper.tweets_df
+    
+    return generate_handles_summary(tweets_filter)
+
+
+"""@app.callback(
+    Output('handles-summary-container', 'children'),
+    [Input('tabs', 'value')])
+def show_handles_summary(tab_value):
+    if tab_value=="manage-tweets-tab":
+        twitter_scraper.load_tweets()
+        tweets_filter.tweets_df = twitter_scraper.tweets_df
+        
+        return generate_handles_summary(tweets_filter)"""
+
         
 @app.callback(
     Output('companies-list-div', 'children'),
