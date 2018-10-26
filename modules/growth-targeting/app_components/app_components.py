@@ -1,5 +1,6 @@
 import dash_html_components as html
 import json
+import pandas as pd
 
 
 TWEETS_UPDATING_FLAG_PATH = '../data/tweets_updating_flag.json'
@@ -52,3 +53,13 @@ def toggle_tweets_updating():
             json.dump({"is_updating": True}, f)
     else:
         print("Error: updating tweets toggle is inconsistent.")
+
+
+def generate_handles_summary(tweets_df):
+    handles_summary_df = pd.concat(
+        [tweets_df.groupby(by='twitter_handle').size(),
+        tweets_df.groupby('twitter_handle')['created_at'].max()],
+        axis=1
+    ).reset_index().rename({0: 'n_tweets'}, axis=1)
+
+    return handles_summary_df
