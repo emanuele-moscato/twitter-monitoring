@@ -23,5 +23,4 @@ pip install -r requirements.txt
 
 ## To do
 * Create a tab to:
-    * See the list of users whose tweets we want to monitor
     * Add users to the list
