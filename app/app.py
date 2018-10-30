@@ -174,7 +174,8 @@ app.layout = html.Div(children=[
                                 ),
                                 html.Button('Add', id='add-handle-button',
                                     style={'marginLeft': '10px'}
-                                )
+                                ),
+                                html.Div(id='new-handle-div')
                             ])
                         ])
                 ],
@@ -259,6 +260,18 @@ def show_handles_summary(value):
     tweets_filter.tweets_df = twitter_scraper.tweets_df
     
     return generate_handles_summary(tweets_filter, value)
+    
+    
+@app.callback(
+    Output('new-handle-div', 'children'),
+    [],
+    [State('add-handle-input', 'value')],
+    [Event('add-handle-button', 'click')],
+)
+def add_handle(new_handle):
+    twitter_scraper.add_handle(new_handle)
+    
+    return html.P(f"Added handle: {new_handle}", style={'marginTop': '10px'})
 
         
 @app.callback(
