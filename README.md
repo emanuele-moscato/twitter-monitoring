@@ -23,4 +23,4 @@ pip install -r requirements.txt
 
 ## To do
 * Create a tab to:
-    * Add users to the list
+    * Update handles list in first and second tabs when a new handle is added.

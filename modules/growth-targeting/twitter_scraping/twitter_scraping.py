@@ -141,6 +141,32 @@ class TwitterScraper(object):
     def get_twitter_ids(self):
         with open(self.twitter_ids_dict_path, 'r') as f:
             self.twitter_ids_dict = json.load(f)
+    
+    
+    def save_twitter_ids(self):
+        if self.twitter_ids_dict:
+            with open(self.twitter_ids_dict_path, 'w') as f:
+                json.dump(self.twitter_ids_dict, f)
+        else:
+            print("Can't save Twitter ids: no Twitter IDs loaded")
+    
+    
+    def add_handle(self, new_handle):
+        self.get_twitter_ids()
+        
+        if not new_handle in self.twitter_ids_dict.keys():
+            try:
+                new_twitter_id = self.get_tweepy_api().get_user(new_handle).id
+            
+                self.twitter_ids_dict.update(
+                    {new_handle: new_twitter_id}
+                )
+                
+                self.save_twitter_ids()
+            except Exception as e:
+                print(e)
+        else:
+            print("Handle already present")
             
             
     def get_tweepy_api(self):
