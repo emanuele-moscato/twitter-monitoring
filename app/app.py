@@ -56,7 +56,7 @@ twitter_scraper = TwitterScraper(
     logger,
     data_path='../data/data_tweepy/tweets_df.pkl',
     credentials_path='../.secret/credentials.ini',
-    twitter_ids_dict_path='../data/data_tweepy/twitter_ids_dict.json'
+    twitter_ids_dict_path=IDS_PATH
 )
 twitter_scraper.load_tweets()
 
@@ -198,6 +198,8 @@ def update_tweets():
         twitter_scraper.twitter_ids_dict)
     
     toggle_tweets_updating(TWEETS_UPDATING_FLAG_PATH)
+    
+    tweets_filter.tweets_df = twitter_scraper.tweets_df
     
     return None
 

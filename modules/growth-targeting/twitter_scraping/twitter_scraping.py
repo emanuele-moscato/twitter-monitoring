@@ -88,6 +88,7 @@ def fetch_tweets(api, twitter_ids_dict, tweets_df):
         try:
             tweets = api.user_timeline(
                 id=twitter_ids_dict[twitter_handle],
+                tweet_mode='extended',
                 count=200,
                 since_id=since_id
             )
@@ -96,13 +97,16 @@ def fetch_tweets(api, twitter_ids_dict, tweets_df):
                 tweet_dict = {
                     'twitter_id': tweet.id,
                     'created_at': tweet.created_at,
-                    'text': tweet.text,
                     'user_id': tweet.user.id_str,
                     'twitter_handle': twitter_handle,
                     'is_retweet': str(tweet.retweeted),
                     'retweet_count': tweet.retweet_count,
                     'favorite_count': tweet.favorite_count
                 }
+                try:
+                    tweet_dict['text'] = tweet._json['retweeted_status']['full_text']
+                except:
+                    tweet_dict['text'] = tweet.full_text
                 tweets_df = tweets_df.append(tweet_dict, ignore_index=True)
         except Exception as e:
             print("Error:", e)
@@ -119,6 +123,7 @@ class TwitterScraper(object):
         self.credentials_path = credentials_path
         self.tweets_df = pd.DataFrame()
         self.logger = logger
+        self.twitter_ids_dict = None
     
     def load_tweets(self):
         with open(self.data_path, 'rb') as f:
@@ -186,6 +191,7 @@ class TwitterScraper(object):
                 try:
                     tweets = api.user_timeline(
                         id=twitter_ids_dict[twitter_handle],
+                        tweet_mode='extended',
                         count=200,
                         since_id=since_id
                     )
@@ -194,13 +200,19 @@ class TwitterScraper(object):
                         tweet_dict = {
                             'twitter_id': tweet.id,
                             'created_at': tweet.created_at,
-                            'text': tweet.text,
                             'user_id': tweet.user.id_str,
                             'twitter_handle': twitter_handle,
                             'is_retweet': str(tweet.retweeted),
                             'retweet_count': tweet.retweet_count,
                             'favorite_count': tweet.favorite_count
                         }
+                        try:
+                            tweet_dict['text'] = tweet._json['retweeted_status']['full_text']
+                        except:
+                            try:
+                                tweet_dict['text'] = tweet.full_text
+                            except:
+                                tweet_dict['text'] = tweet.text
                         self.tweets_df = self.tweets_df.append(tweet_dict,
                             ignore_index=True)
                 except Exception as e:
