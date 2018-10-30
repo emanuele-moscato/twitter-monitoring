@@ -154,17 +154,33 @@ app.layout = html.Div(children=[
                         ),
                         html.Div(id='tweets-updating-container',
                             style={'marginTop': '10px'}),
-                        html.H3("Summary by Twitter handle"),
-                        html.Div(children=[
-                            dcc.Dropdown(
-                                id='subselect-handles-dropdown',
-                                options=handles_present(tweets_filter),
-                                placeholder="Select handles",
-                                multi=True,
-                            )],
-                            style={'width': '20%', 'display': 'inline-block'}
-                        ),
-                        html.Div(id='handles-summary-container')
+                        html.Div(className='row', children=[
+                            html.Div(className='six columns', children=[
+                                html.H3("Summary by Twitter handle"),
+                                html.Div(children=[
+                                    dcc.Dropdown(
+                                        id='subselect-handles-dropdown',
+                                        options=handles_present(tweets_filter),
+                                        placeholder="Select handles",
+                                        multi=True,
+                                    )],
+                                    style={
+                                        'width': '30%',
+                                        'display': 'inline-block'
+                                    }
+                                ),
+                                html.Div(id='handles-summary-container')
+                            ]),
+                            html.Div(className='six columns', children=[
+                                html.H3("Add handle"),
+                                dcc.Input(id='add-handle-input',
+                                    style={'marginRight': '10px'}
+                                ),
+                                html.Button('Add', id='add-handle-button',
+                                    style={'marginLeft': '10px'}
+                                )
+                            ])
+                        ])
                 ],
                 style={'text-align':"center"}
             )
