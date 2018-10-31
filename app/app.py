@@ -4,7 +4,7 @@ import dash_html_components as html
 import dash_core_components as dcc
 from dash.dependencies import Input, Output, State, Event
 import pandas as pd
-from app_components.app_components import handles_present, generate_table, \
+from app_components.app_components import handles_monitored, generate_table, \
     tweets_are_updating, toggle_tweets_updating, generate_handles_summary
 from twitter_scraping.twitter_scraping import TwitterScraper, TweetsFilter
 import daiquiri
@@ -17,6 +17,7 @@ from time import sleep
 
 LOGS_DIR = '../logs/logs_tweepy/'
 IDS_PATH = '../data/data_tweepy/twitter_ids_dict.json'
+DATA_PATH = '../data/data_tweepy/tweets_df.pkl'
 TWEETS_UPDATING_FLAG_PATH = '../data/data_tweepy/tweets_updating_flag.json'
 
 daiquiri.setup(
@@ -54,7 +55,7 @@ app.config['suppress_callback_exceptions']=True
 
 twitter_scraper = TwitterScraper(
     logger,
-    data_path='../data/data_tweepy/tweets_df.pkl',
+    data_path=DATA_PATH,
     credentials_path='../.secret/credentials.ini',
     twitter_ids_dict_path=IDS_PATH
 )
@@ -96,7 +97,8 @@ app.layout = html.Div(children=[
                                 children=[
                                     dcc.Dropdown(
                                         id='companies-dropdown',
-                                        options=handles_present(tweets_filter),
+                                        options=handles_monitored(
+                                            twitter_scraper),
                                         placeholder="Companies...",
                                         multi=True
                                     )
@@ -160,7 +162,8 @@ app.layout = html.Div(children=[
                                 html.Div(children=[
                                     dcc.Dropdown(
                                         id='subselect-handles-dropdown',
-                                        options=handles_present(tweets_filter),
+                                        options=handles_monitored(
+                                            twitter_scraper),
                                         placeholder="Select handles",
                                         multi=True,
                                     )],
@@ -174,13 +177,35 @@ app.layout = html.Div(children=[
                             html.Div(className='six columns', children=[
                                 html.H3("Add handle"),
                                 dcc.Input(id='add-handle-input',
+                                    placeholder='Handle...',
                                     style={'marginRight': '10px'}
                                 ),
                                 html.Button('Add', id='add-handle-button',
                                     style={'marginLeft': '10px'}
                                 ),
                                 html.Div(id='new-handle-div')
-                            ])
+                            ]),
+                            html.Div(className='six columns', children=[
+                                html.H3("Delete handle"),
+                                dcc.Input('delete-handle-input',
+                                    placeholder='Handle...',
+                                    style={
+                                        'marginRight': '10px'
+                                    }),
+                                dcc.Checklist(id='delete-check',
+                                    options=[
+                                        {'label': 'Sure?', 'value': 'y'}
+                                    ],
+                                    values=[],
+                                    style={'display': 'inline-block'}
+                                ),
+                                html.Button('Delete', id='delete-handle-button',
+                                    style={
+                                        'marginLeft': '10px'
+                                    }),
+                                html.Div(id='delete-handle-div')],
+                                style = {'marginTop': '20px'}
+                            )
                         ])
                 ],
                 style={'text-align':"center"}
@@ -260,12 +285,13 @@ def toggle_update_button(n_intervals):
         
 @app.callback(
     Output('handles-summary-container', 'children'),
-    [Input('subselect-handles-dropdown', 'value')])
-def show_handles_summary(value):
+    [Input('subselect-handles-dropdown', 'value'),
+    Input('tweets-updating-interval', 'n_intervals')])
+def show_handles_summary(value, n_intervals):
     twitter_scraper.load_tweets()
     tweets_filter.tweets_df = twitter_scraper.tweets_df
     
-    return generate_handles_summary(tweets_filter, value)
+    return generate_handles_summary(twitter_scraper, tweets_filter, value)
     
     
 @app.callback(
@@ -275,9 +301,37 @@ def show_handles_summary(value):
     [Event('add-handle-button', 'click')],
 )
 def add_handle(new_handle):
-    twitter_scraper.add_handle(new_handle)
+    return html.P(twitter_scraper.add_handle(new_handle),
+        style={'marginTop': '10px'})
+
+
+@app.callback(
+    Output('companies-dropdown', 'options'),
+    [Input('tweets-updating-interval', 'n_intervals')])
+def update_companies_filter_options(n_intervals):
+    return handles_monitored(twitter_scraper)
+
+
+@app.callback(
+    Output('subselect-handles-dropdown', 'options'),
+    [Input('tweets-updating-interval', 'n_intervals')])
+def update_subselect_handles_options(n_intervals):
+    return handles_monitored(twitter_scraper)
     
-    return html.P(f"Added handle: {new_handle}", style={'marginTop': '10px'})
+    
+@app.callback(
+    Output('delete-handle-div', 'children'),
+    [],
+    [State('delete-check', 'values'),
+    State('delete-handle-input', 'value')],
+    [Event('delete-handle-button', 'click')])
+def delete_handle(checks, handle):
+    if 'y' in checks:
+        print(f"Deleting handle {handle}")
+        
+        return html.P(twitter_scraper.delete_handle(handle))
+    else:
+        return html.P(f"Please confirm you want to delete handle '{handle}'")
         
         
 @app.callback(

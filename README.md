@@ -23,4 +23,4 @@ pip install -r requirements.txt
 
 ## To do
 * Create a tab to:
-    * Update handles list in first and second tabs when a new handle is added.
+    * Add consistent logic between added/removed handles and what is shown in the table/selectable in the dropdowns.
