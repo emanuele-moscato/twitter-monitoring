@@ -133,6 +133,12 @@ class TwitterScraper(object):
             del self.twitter_ids_dict[handle]
             self.save_twitter_ids()
             
+            if delete_tweets:
+                self.tweets_df = self.tweets_df[self.tweets_df['twitter_handle']!=handle]
+                self.save_tweets()
+                
+                return "Deleted handle '{}' along with tweets".format(handle)
+            
             return "Deleted handle: {}".format(handle)
         else:
             return "Handle '{}' not monitored".format(handle)

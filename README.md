@@ -11,4 +11,3 @@ git clone git@bitbucket.org:theasi/alexandria-babylon.git
 ## To do
 * Create a tab to:
     * Add consistent logic between added/removed handles and what is shown in the table/selectable in the dropdowns.
-    * Add option to delete the tweets as well when a handle is deleted.

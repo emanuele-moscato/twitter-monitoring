@@ -186,9 +186,10 @@ app.layout = html.Div(children=[
                                     style={
                                         'marginRight': '10px'
                                     }),
-                                dcc.Checklist(id='delete-check',
+                                dcc.Checklist(id='delete-tweets-check',
                                     options=[
-                                        {'label': 'Sure?', 'value': 'y'}
+                                        {'label': 'Delete tweets',
+                                            'value': 'dt'}
                                     ],
                                     values=[],
                                     style={'display': 'inline-block'}
@@ -197,7 +198,19 @@ app.layout = html.Div(children=[
                                     style={
                                         'marginLeft': '10px'
                                     }),
-                                html.Div(id='delete-handle-div')],
+                                dcc.Checklist(id='delete-check',
+                                    options=[
+                                        {'label': 'Sure?', 'value': 'y'}
+                                    ],
+                                    values=[],
+                                    style={
+                                        'display': 'inline-block',
+                                        'marginLeft': '10px'
+                                    }
+                                ),
+                                html.Div(id='delete-handle-div',
+                                    style={'marginTop': '10px'}
+                                )],
                                 style = {'marginTop': '20px'}
                             )
                         ])
@@ -315,11 +328,16 @@ def update_subselect_handles_options(n_intervals):
     Output('delete-handle-div', 'children'),
     [],
     [State('delete-check', 'values'),
+    State('delete-tweets-check', 'values'),
     State('delete-handle-input', 'value')],
     [Event('delete-handle-button', 'click')])
-def delete_handle(checks, handle):
-    if 'y' in checks:
+def delete_handle(sure_checks, delete_tweets_checks, handle):
+    if 'y' in sure_checks:
         print(f"Deleting handle {handle}")
+        
+        if 'dt' in delete_tweets_checks:
+            return html.P(twitter_scraper.delete_handle(handle,
+                delete_tweets=True))
         
         return html.P(twitter_scraper.delete_handle(handle))
     else:
