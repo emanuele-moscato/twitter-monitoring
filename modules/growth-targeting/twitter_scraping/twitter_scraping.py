@@ -74,6 +74,7 @@ class TwitterScraper(object):
         self.credentials_path = credentials_path
         self.tweets_df = pd.DataFrame()
         self.logger = logger
+        self.twitter_ids_dict = None
     
     def load_tweets(self):
         with open(self.data_path, 'rb') as f:
@@ -104,6 +105,8 @@ class TwitterScraper(object):
     def add_handle(self, new_handle):
         self.get_twitter_ids()
         
+        print(self.twitter_ids_dict)
+        
         if not new_handle in self.twitter_ids_dict.keys():
             try:
                 new_twitter_id = self.get_session().user_id(new_handle)
@@ -113,10 +116,26 @@ class TwitterScraper(object):
                 )
                 
                 self.save_twitter_ids()
+                
+                return "Handle '{}' is now monitored".format(new_handle)
             except Exception as e:
                 print(e)
+                
+                return "Couldn't add handle '{}'".format(new_handle)
         else:
-            print("Handle already present")
+            return "Handle '{}' already monitored".format(new_handle)
+            
+            
+    def delete_handle(self, handle, delete_tweets=False):
+        self.get_twitter_ids()
+        
+        if handle in list(self.twitter_ids_dict.keys()):
+            del self.twitter_ids_dict[handle]
+            self.save_twitter_ids()
+            
+            return "Deleted handle: {}".format(handle)
+        else:
+            return "Handle '{}' not monitored".format(handle)
             
             
     def get_session(self):

@@ -16,8 +16,9 @@ tweets_cols = [
 ]
 
 
-def handles_present(tweets_filter):
-    handles = list(tweets_filter.tweets_df['twitter_handle'].unique())
+def handles_monitored(twitter_scraper):
+    twitter_scraper.get_twitter_ids()
+    handles = list(twitter_scraper.twitter_ids_dict.keys())
     
     return [{'label': handle, 'value': handle} for handle in handles]
 
@@ -56,7 +57,10 @@ def toggle_tweets_updating():
         print("Error: updating tweets toggle is inconsistent.")
 
 
-def generate_handles_summary(tweets_filter, handles_list):
+def generate_handles_summary(twitter_scraper, tweets_filter, handles_list):
+    """
+    Returns table containing summary of downloaded tweets by Twitter handle.
+    """
     filtered_df = tweets_filter.filter_tweets(companies_list=handles_list)
     
     handles_summary_df = pd.concat(
@@ -64,6 +68,12 @@ def generate_handles_summary(tweets_filter, handles_list):
         filtered_df.groupby('twitter_handle')['created_at'].max()],
         axis=1
     ).reset_index().rename({0: 'n_tweets'}, axis=1)
+    
+    twitter_scraper.get_twitter_ids()
+    
+    handles_summary_df['is_monitored'] = handles_summary_df.apply(
+        lambda row: str(row['twitter_handle']
+        in list(twitter_scraper.twitter_ids_dict)), axis=1)
     
     table = html.Table(
         # Header
@@ -78,15 +88,4 @@ def generate_handles_summary(tweets_filter, handles_list):
         style={'display': 'inline-block',}
     )
     
-    subselect_dropdown = dcc.Dropdown(
-        id='subselect-handles-dropdown',
-        options=handles_present(tweets_filter),
-        placeholder="Select handles...",
-        multi=True
-    )
-    
-    return [
-        # html.H3("Summary by Twitter handle"),
-        # subselect_dropdown,
-        table
-    ]
+    return [table]

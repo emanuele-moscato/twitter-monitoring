@@ -10,6 +10,5 @@ git clone git@bitbucket.org:theasi/alexandria-babylon.git
 
 ## To do
 * Create a tab to:
-    * See the list of companies
-    * Download new tweets form those companies
-    * Add companies to the list
+    * Add consistent logic between added/removed handles and what is shown in the table/selectable in the dropdowns.
+    * Add option to delete the tweets as well when a handle is deleted.
