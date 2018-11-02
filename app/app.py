@@ -146,7 +146,9 @@ app.layout = html.Div(children=[
             )
         ]),
         dcc.Tab(label='Manage tweets', children=[
-            html.Div(
+            html.Div(id='tweets-updating-container',
+                style={'text-align': 'center','marginTop': '10px'}),
+            html.Div(id='manage-tweets-container',
                 children=[
                     html.Button("Update tweets", id='update-tweets-button',
                         style={'marginTop': '10px'}),
@@ -155,8 +157,6 @@ app.layout = html.Div(children=[
                             interval=1000,
                             n_intervals=0
                         ),
-                        html.Div(id='tweets-updating-container',
-                            style={'marginTop': '10px'}),
                         html.Div(className='row', children=[
                             html.Div(className='six columns', children=[
                                 html.H3("Summary by Twitter handle"),
@@ -222,7 +222,7 @@ app.layout = html.Div(children=[
                             )
                         ])
                 ],
-                style={'text-align':"center"}
+                style={'text-align':'center'}
             )
         ])
     ]),
@@ -288,13 +288,13 @@ def tweets_updating_signal(n_intervals, n_clicks):
 
 
 @app.callback(
-    Output('update-tweets-button', 'style'),
+    Output('manage-tweets-container', 'style'),
     [Input('tweets-updating-interval', 'n_intervals')])
 def toggle_update_button(n_intervals):
     if tweets_are_updating(TWEETS_UPDATING_FLAG_PATH):
         return {'display': 'none'}
     else:
-        return {'display': 'inline-block', 'marginTop': '10px'}
+        return {'text-align': 'center'}
     
         
 @app.callback(
