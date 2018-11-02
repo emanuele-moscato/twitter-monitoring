@@ -301,10 +301,13 @@ def toggle_update_button(n_intervals):
     [Input('subselect-handles-dropdown', 'value'),
     Input('tweets-updating-interval', 'n_intervals')])
 def show_handles_summary(value, n_intervals):
-    twitter_scraper.load_tweets()
-    tweets_filter.tweets_df = twitter_scraper.tweets_df
-    
-    return generate_handles_summary(twitter_scraper, tweets_filter, value)
+    if not tweets_are_updating('../data/data_tweepy/tweets_updating_flag.json'):
+        twitter_scraper.load_tweets()
+        tweets_filter.tweets_df = twitter_scraper.tweets_df
+        
+        return generate_handles_summary(twitter_scraper, tweets_filter, value)
+    else:
+        pass
     
     
 @app.callback(
