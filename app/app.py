@@ -19,6 +19,7 @@ LOGS_DIR = '../logs/logs_tweepy/'
 IDS_PATH = '../data/data_tweepy/twitter_ids_dict.json'
 DATA_PATH = '../data/data_tweepy/tweets_df.pkl'
 TWEETS_UPDATING_FLAG_PATH = '../data/data_tweepy/tweets_updating_flag.json'
+CREDENTIALS_PATH = '../.secret/credentials.ini'
 
 daiquiri.setup(
     level=logging.INFO,
@@ -56,7 +57,7 @@ app.config['suppress_callback_exceptions']=True
 twitter_scraper = TwitterScraper(
     logger,
     data_path=DATA_PATH,
-    credentials_path='../.secret/credentials.ini',
+    credentials_path=CREDENTIALS_PATH,
     twitter_ids_dict_path=IDS_PATH
 )
 twitter_scraper.load_tweets()
@@ -301,7 +302,7 @@ def toggle_update_button(n_intervals):
     [Input('subselect-handles-dropdown', 'value'),
     Input('tweets-updating-interval', 'n_intervals')])
 def show_handles_summary(value, n_intervals):
-    if not tweets_are_updating('../data/data_tweepy/tweets_updating_flag.json'):
+    if not tweets_are_updating(TWEETS_UPDATING_FLAG_PATH):
         twitter_scraper.load_tweets()
         tweets_filter.tweets_df = twitter_scraper.tweets_df
         

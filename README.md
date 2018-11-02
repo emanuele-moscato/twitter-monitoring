@@ -24,4 +24,3 @@ pip install -r requirements.txt
 ## To do
 * Create a tab to:
     * Add consistent logic between added/removed handles and what is shown in the table/selectable in the dropdowns.
-    * Add option to delte the tweets as well when a handle is deleted.
