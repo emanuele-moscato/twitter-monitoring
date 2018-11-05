@@ -12,6 +12,7 @@ import pandas as pd
 
 DATA_DIR = '../data/'
 LOGS_DIR = '../logs/'
+SECRET_DIR = '../.secret/'
 
 TWEETS_COLS = [
     'twitter_handle',
@@ -21,6 +22,14 @@ TWEETS_COLS = [
     'retweet_count',
     'favorite_count'
 ]
+
+CREDENTIALS_FILE = """
+[twitter_credentials]
+consumer_key: 
+consumer_secret: 
+access_token: 
+access_token_secret: 
+"""
 
 
 def main():
@@ -81,6 +90,16 @@ def main():
     if not os.path.exists(tweets_df_path_tweepy):
         with open(tweets_df_path_tweepy, 'wb') as f:
             pickle.dump(empty_tweets_df, f)
+    
+    # Create secret folder and (empty) credentials file
+    if not os.path.isdir(SECRET_DIR):
+        os.mkdir(SECRET_DIR)
+    
+    credentials_path = os.path.join(SECRET_DIR, 'credentials.ini')
+    
+    if not os.path.exists(credentials_path):
+        with open(credentials_path, 'w') as f:
+            f.write(CREDENTIALS_FILE)
 
 
 if __name__=='__main__':
