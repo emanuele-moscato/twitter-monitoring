@@ -23,13 +23,11 @@ TWEETS_COLS = [
     'favorite_count'
 ]
 
-CREDENTIALS_FILE = """
-[twitter_credentials]
+CREDENTIALS_FILE = """[twitter_credentials]
 consumer_key: 
 consumer_secret: 
 access_token: 
-access_token_secret: 
-"""
+access_token_secret: """
 
 
 def main():
