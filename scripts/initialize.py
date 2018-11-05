@@ -34,8 +34,8 @@ def main():
     if not os.path.isdir(LOGS_DIR):
         os.mkdir(LOGS_DIR)
         
-    if not os.path.isdir(os.path.join(LOGS_DIR, 'logs_tweetpy/')):
-        os.mkdir(os.path.join(LOGS_DIR, 'logs_tweetpy/'))
+    if not os.path.isdir(os.path.join(LOGS_DIR, 'logs_tweepy/')):
+        os.mkdir(os.path.join(LOGS_DIR, 'logs_tweepy/'))
     
     # Create (empty) files for Twitter handles-ids dictionary
     empty_handles_dict = {}
