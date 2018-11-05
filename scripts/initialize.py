@@ -53,7 +53,7 @@ def main():
             json.dump(empty_handles_dict, f)
         
     # Create (empty) files for tweets updating flag
-    tweets_updating_flag = {'updating': False}
+    tweets_updating_flag = {'is_updating': False}
     
     updating_flag_path = os.path.join(DATA_DIR, 'tweets_updating_flag.json')
     updating_flag_path_tweepy = os.path.join(
